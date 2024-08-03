@@ -33,9 +33,11 @@
   
             <geom name="floor" pos="0.2 0 0" size="1 1 0.05" type="plane" material="floor_material"/>
 
-       
-      <camera name="third_pov"pos="0.93 -0.64  0.73"  quat="0.86 0.42 0.17 0.23"   mode="fixed" fovy="58"/>
-        
+      
+            <camera name="side_camera" pos="0.21156062 -0.38533568  0.5734195" quat="0.83812764  0.36486969 -0.13685453 -0.3816844" mode="fixed" fovy="58"/>
+            <camera name="front_camera" pos="1 0.0 0.485"  quat="0.6 0.387 0.387 0.6"  mode="fixed" fovy="58"/>
+            
+
 
         <body name="T_outline" pos="0.58 -0.15 0.21" euler="0 0 0.7">
             <geom name="T_outline_horizontal" type="box" pos="0 0 0" size="0.035 0.01 0.0001" rgba="0 0.6 0 0.2" contype="0" conaffinity="0"/>

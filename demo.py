@@ -6,6 +6,7 @@ from Utils.utils import *
 from controller import OpsaceController
 from mujoco_ar import MujocoARConnector
 import random
+import rerun as rr
 
 class Simulation:
     
@@ -23,7 +24,7 @@ class Simulation:
         self.rgb_renderer = mujoco.Renderer(self.mjmodel, height=480, width=640)
         self.depth_renderer = mujoco.Renderer(self.mjmodel, height=480, width=640)
         self.depth_renderer.enable_depth_rendering()
-        self.cameras = ["third_pov"]
+        self.cameras = ["front_camera","side_camera","top_camera"]
         self.T_object = "T"
         self.T_joint = "T_joint"
         self.T_outline_object = "T_outline"
@@ -50,6 +51,19 @@ class Simulation:
 
         # MujocoAR (pip install mujoco_ar)
         self.mujocoAR = MujocoARConnector(controls_frequency=10)
+
+        # Rerun
+        # rr.init("Mujoco_push_t", spawn=True)
+    
+    def send_rr(self) -> dict:
+        data = {}    
+        for camera in self.cameras:
+            self.rgb_renderer.update_scene(self.mjdata, camera)
+            self.depth_renderer.update_scene(self.mjdata, camera)
+            data[camera+"_rgb"] = self.rgb_renderer.render()
+            data[camera+"_depth"] = self.depth_renderer.render()
+            rr.log(camera+"_rgb", rr.Image(data[camera+"_rgb"]).compress(jpeg_quality=95))
+        return data
     
     def is_valid_position(self, pos1, pos2, min_dist, max_dist):
         """
@@ -131,9 +145,7 @@ class Simulation:
         with mujoco.viewer.launch_passive(self.mjmodel, self.mjdata, show_left_ui=False, show_right_ui=False) as viewer:
 
             self.random_placement()
-            
-
-            while viewer.is_running():
+            while viewer.is_running():       
 
                 step_start = time.time()
 
@@ -161,3 +173,5 @@ if __name__ == "__main__":
     # Initialize and start the simulation
     sim = Simulation()
     sim.start()
+
+rr.log("world/camera/image/rgb", rr.Image(img_rgb).compress(jpeg_quality=95))

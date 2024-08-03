@@ -200,26 +200,12 @@
 
                         
                         <body name="stick_body" pos="0 0 0.0">
-                         <geom name="stick" type="cylinder" size="0.01 0.15" rgba="0.25 0.25 0.25 1"/>
-                         <geom pos="0 0 0.15" size="0.01" type="sphere" mass="0.1" friction="1 1 1" rgba="0.25 0.25 0.25 1"/>
+                         <geom name="stick" type="cylinder" size="0.01 0.15" rgba="0.25 0.25 0.25 0.8"/>
+                         <geom pos="0 0 0.15" size="0.01" type="sphere" mass="0.1" friction="1 1 1" rgba="0.25 0.25 0.25 1.0"/>
                          <site name="eef" rgba="1 0 0 0" pos="0 0 0.15" size="0.01" group="1"/>
                         </body>
 
-                         <!-- <body name="d435i_2" pos="0.07 0.0 0.03" quat="0.1227878 0.69636424 0.69636424 0.1227878" childclass="d435i">
-                        <camera name="gripper_camera" pos="0 0 0"  mode="fixed" fovy="90"/>
-                        <body name="d435i_2_in"  quat="0 0 1 0" >
-                          <geom mesh="d435i_0" material="IR_Lens" class="visual435i"/>
-                          <geom mesh="d435i_1" material="IR_Emitter_Lens" class="visual435i"/>
-                          <geom mesh="d435i_2" material="IR_Rim" class="visual435i"/>
-                          <geom mesh="d435i_3" material="IR_Lens" class="visual435i"/>
-                          <geom mesh="d435i_4" material="Cameras_Gray" class="visual435i"/>
-                          <geom mesh="d435i_5" material="Black_Acrylic" class="visual435i"/>
-                          <geom mesh="d435i_6" material="Black_Acrylic" class="visual435i"/>
-                          <geom mesh="d435i_7" material="RGB_Pupil" class="visual435i"/>
-                          <geom mesh="d435i_8" mass="0.072" material="Metal_Casing" class="visual435i"/>
-                          <geom class="collision435i" type="capsule" mesh="d435i_8"/>
-                          </body>
-                        </body> -->
+                       
 
                      </body>
 
