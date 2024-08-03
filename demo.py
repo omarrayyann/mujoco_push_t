@@ -39,7 +39,7 @@ class Simulation:
         self.camera_data = None
         self.joint_names = ["joint1","joint2","joint3","joint4","joint5","joint6","joint7"]
         self.max_ori_error = 0.04
-        self.max_pos_error = 0.01
+        self.max_pos_error = 0.015
 
         # Controller
         self.controller = OpsaceController(self.mjmodel, self.joint_names, self.eef_site_name)
@@ -78,10 +78,7 @@ class Simulation:
         T_euler = quat_to_euler(T_quat)
         T_outline_euler = quat_to_euler(T_outline_quat)
 
-        print("Pos error: ", np.linalg.norm(np.array(T_pos)[0:2] - np.array(T_outline_pos)[0:2]))
-        print("Ori error: ", abs(T_euler[-1]-T_outline_euler[-1]))
-
-        if np.linalg.norm(np.array(T_pos)[0:2] - np.array(T_outline_pos)[0:2]) <= self.max_pos_error and np.linalg.norm(np.array(T_euler)[2] - np.array(T_outline_pos)[2]) < self.max_ori_error:
+        if np.linalg.norm(np.array(T_pos)[0:2] - np.array(T_outline_pos)[0:2]) <= self.max_pos_error and np.linalg.norm(np.array(T_euler)[2] - np.array(T_outline_euler)[2]) < self.max_ori_error:
             return True
         
     def fell(self):

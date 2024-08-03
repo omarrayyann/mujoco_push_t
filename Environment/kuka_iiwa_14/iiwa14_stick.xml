@@ -196,9 +196,7 @@
 
                         <geom name="cylinder_geom" type="cylinder" size="0.03 0.01" rgba="0.25 0.25 0.25 1"/>
 
-                        <camera name="gripper_camera"  pos="0.07 0.0 0.0" quat="0.1227878 0.69636424 0.69636424 0.1227878"  mode="fixed" fovy="90"/>
-
-                        <camera name="gripper_camera_fake" pos="0.1 0.0 0.02" quat="0.0 0.7071 0.7071 0.0" mode="fixed" fovy="90"/>
+                        <camera name="top_camera" pos="0.05 0.0 0.01" quat="0.0 0.7071 0.7071 0.0" mode="fixed" fovy="100"/>
 
                         
                         <body name="stick_body" pos="0 0 0.0">
