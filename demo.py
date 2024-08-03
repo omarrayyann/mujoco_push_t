@@ -43,7 +43,7 @@ class Simulation:
 
         # Controller
         self.controller = OpsaceController(self.mjmodel, self.joint_names, self.eef_site_name)
-        self.q0 = np.array([0, 0.2448, 0, -1.4204, 0, 1.4765, 0])
+        self.q0 = np.array([0, 0.4335, 0, -1.7657, 0, 0.9424, 0])
         self.dof_ids = np.array([self.mjmodel.joint(name).id for name in self.joint_names])
         self.actuator_ids = np.array([self.mjmodel.actuator(name).id for name in self.joint_names])
         self.mjdata.qpos[self.actuator_ids] = self.q0
@@ -131,8 +131,10 @@ class Simulation:
         with mujoco.viewer.launch_passive(self.mjmodel, self.mjdata, show_left_ui=False, show_right_ui=False) as viewer:
 
             self.random_placement()
+            
 
             while viewer.is_running():
+
                 step_start = time.time()
 
                 tau = self.controller.get_tau(self.mjmodel, self.mjdata, self.target_pos, self.target_rot)
