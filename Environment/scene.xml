@@ -25,6 +25,10 @@
 
     <worldbody>
 
+
+            <site name="eef_target" pos="0.5 0.0 0.23"/>
+
+
         <light pos="0 0 4.5" dir="0 0 -1" directional="true"/>
          <light pos="0 4.5 0.6" dir="0 -1 0" directional="true"/>
         <light pos="0 -4.5 0.6" dir="0 1 0" directional="true"/>
@@ -51,6 +55,10 @@
         </body>
 
         <geom name="eef_target" type="sphere" size="0.01" pos="100 100 0.001" rgba="1 1 0 1.0" contype="0" conaffinity="0"/>
+    
+        <body name="target_end" pos="11.58 -11.15 11.21" euler="0 0 0.7" mocap="true">
+        <geom name="target_end_geom" type="sphere" size="0.01" contype="0" conaffinity="0"/>
+        </body>
 
     </worldbody>
 </mujoco>

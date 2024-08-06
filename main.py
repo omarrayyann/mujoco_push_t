@@ -50,7 +50,15 @@ class Simulation:
         self.mjdata.qpos[self.actuator_ids] = self.q0
 
         # MujocoAR (pip install mujoco_ar)
-        self.mujocoAR = MujocoARConnector(controls_frequency=10)
+        self.mujocoAR = MujocoARConnector(controls_frequency=10,mujoco_model=self.mjmodel,mujoco_data=self.mjdata)
+
+        self.mujocoAR.link_site(
+            name="eef_target",
+            scale=2.0,
+            translation=self.pos_origin,
+            button_fn=lambda: (self.random_placement(), setattr(self, 'placement_time', time.time())) if time.time() - self.placement_time > 2.0 else None,
+            disable_rot=True,
+        )
 
         # Rerun
         # rr.init("Mujoco_push_t", spawn=True)
@@ -158,12 +166,8 @@ class Simulation:
                 if (self.done() or self.fell() or self.button) and time.time() - self.placement_time > 2.0:
                     self.random_placement()
                     self.placement_time = time.time()
-
-                online_data = self.mujocoAR.get_latest_data()
-                if online_data["position"] is not None:
-                    online_pos = online_data["position"].copy()
-                    self.button = online_data["button"]
-                    self.target_pos[:2] = self.pos_origin[:2] + 2.0 * online_pos[:2]
+                
+                self.target_pos[:2] = self.mjdata.site("eef_target").xpos[:2]
                     
                 time_until_next_step = self.dt - (time.time() - step_start)
                 if time_until_next_step > 0:
