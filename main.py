@@ -54,7 +54,7 @@ class Simulation:
 
         self.mujocoAR.link_site(
             name="eef_target",
-            scale=2.0,
+            scale=1.5,
             translation=self.pos_origin,
             button_fn=lambda: (self.random_placement(), setattr(self, 'placement_time', time.time())) if time.time() - self.placement_time > 2.0 else None,
             disable_rot=True,
@@ -178,4 +178,3 @@ if __name__ == "__main__":
     sim = Simulation()
     sim.start()
 
-rr.log("world/camera/image/rgb", rr.Image(img_rgb).compress(jpeg_quality=95))

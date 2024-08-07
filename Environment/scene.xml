@@ -26,7 +26,7 @@
     <worldbody>
 
 
-            <site name="eef_target" pos="0.5 0.0 0.23"/>
+            <site name="eef_target" pos="0.5 0.0 0.23" rgba="0 0 0 0 "/>
 
 
         <light pos="0 0 4.5" dir="0 0 -1" directional="true"/>
@@ -50,15 +50,12 @@
 
         <body name="T" pos="0.5 0.2 0.25" euler="0 0 -0.3">
           <joint name="T_joint" type="free" damping="0.001"/>
-            <geom name="T_horizontal" type="box" pos="0 0 0" size="0.035 0.01 0.01" rgba="0.6 0 0 1.0" mass="0.01"/>
-            <geom name="T_vertical" type="box" pos="0 -0.0375 0" size="0.01 0.0275 0.01" rgba="0.6 0 0 1.0" mass="0.01"/>
+            <geom name="T_horizontal" type="box" pos="0 0 0" size="0.035 0.01 0.01" rgba="0.6 0 0 1.0" mass="0.005"/>
+            <geom name="T_vertical" type="box" pos="0 -0.0375 0" size="0.01 0.0275 0.01" rgba="0.6 0 0 1.0" mass="0.005"/>
         </body>
 
-        <geom name="eef_target" type="sphere" size="0.01" pos="100 100 0.001" rgba="1 1 0 1.0" contype="0" conaffinity="0"/>
     
-        <body name="target_end" pos="11.58 -11.15 11.21" euler="0 0 0.7" mocap="true">
-        <geom name="target_end_geom" type="sphere" size="0.01" contype="0" conaffinity="0"/>
-        </body>
+      
 
     </worldbody>
 </mujoco>
