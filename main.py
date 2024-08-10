@@ -6,7 +6,7 @@ from Utils.utils import *
 from controller import OpsaceController
 from mujoco_ar import MujocoARConnector
 import random
-import rerun as rr
+import threading
 
 class Simulation:
     
@@ -42,6 +42,12 @@ class Simulation:
         self.max_ori_error = 0.04
         self.max_pos_error = 0.015
 
+        # Recording and Policy Related
+        self.record = True
+        self.run_policy = False
+        self.recording_frequency = 10
+        self.last_recording_time = -1
+
         # Controller
         self.controller = OpsaceController(self.mjmodel, self.joint_names, self.eef_site_name)
         self.q0 = np.array([0, 0.4335, 0, -1.7657, 0, 0.9424, 0])
@@ -50,27 +56,24 @@ class Simulation:
         self.mjdata.qpos[self.actuator_ids] = self.q0
 
         # MujocoAR (pip install mujoco_ar)
-        self.mujocoAR = MujocoARConnector(controls_frequency=10,mujoco_model=self.mjmodel,mujoco_data=self.mjdata)
+        self.mujocoAR = MujocoARConnector(mujoco_model=self.mjmodel,mujoco_data=self.mjdata)
 
         self.mujocoAR.link_site(
             name="eef_target",
-            scale=1.5,
+            scale=2.0,
             translation=self.pos_origin,
-            button_fn=lambda: (self.random_placement(), setattr(self, 'placement_time', time.time())) if time.time() - self.placement_time > 2.0 else None,
+            button_fn=lambda: (self.random_placement(), setattr(self, 'placement_time', time.time()), self.reset_data()) if time.time() - self.placement_time > 2.0 else None,
             disable_rot=True,
         )
 
-        # Rerun
-        # rr.init("Mujoco_push_t", spawn=True)
     
-    def send_rr(self) -> dict:
+    def get_camera_data(self) -> dict:
         data = {}    
         for camera in self.cameras:
             self.rgb_renderer.update_scene(self.mjdata, camera)
             self.depth_renderer.update_scene(self.mjdata, camera)
             data[camera+"_rgb"] = self.rgb_renderer.render()
             data[camera+"_depth"] = self.depth_renderer.render()
-            rr.log(camera+"_rgb", rr.Image(data[camera+"_rgb"]).compress(jpeg_quality=95))
         return data
     
     def is_valid_position(self, pos1, pos2, min_dist, max_dist):
@@ -144,7 +147,7 @@ class Simulation:
         Start the simulation.
         """
         self.mujocoAR.start()
-        self.mac_launch()
+        threading.Thread(target=self.mac_launch).start()
 
     def mac_launch(self):
         """
@@ -153,9 +156,12 @@ class Simulation:
         with mujoco.viewer.launch_passive(self.mjmodel, self.mjdata, show_left_ui=False, show_right_ui=False) as viewer:
 
             self.random_placement()
+            self.reset_data()
+
             while viewer.is_running():       
 
                 step_start = time.time()
+                self.record_data()
 
                 tau = self.controller.get_tau(self.mjmodel, self.mjdata, self.target_pos, self.target_rot)
                 self.mjdata.ctrl[self.actuator_ids] = tau[self.actuator_ids]
@@ -164,6 +170,10 @@ class Simulation:
                 viewer.sync()
 
                 if (self.done() or self.fell() or self.button) and time.time() - self.placement_time > 2.0:
+                    if not self.fell() and not self.button:
+                        self.record_data()
+                        self.save_data()
+                    self.reset_data()
                     self.random_placement()
                     self.placement_time = time.time()
                 
@@ -173,8 +183,121 @@ class Simulation:
                 if time_until_next_step > 0:
                     time.sleep(time_until_next_step)
 
+    def record_data(self):
+
+        if not self.record or self.camera_data is None:
+            return
+
+        if self.camera_data is not None and self.last_recording_time != -1 and time.time()-self.last_recording_time < (1/self.recording_frequency):
+            return
+        
+        if self.record_start_time == None:
+            self.record_start_time = time.time()
+            time_diff = 0.0
+        else:
+            time_diff = time.time() - self.record_start_time
+
+        pose = np.identity(4)
+        pose[0:3,3] = self.mjdata.site(self.site_id).xpos.copy()
+        pose[0:3,0:3] = self.mjdata.site(self.site_id).xmat.copy().reshape((3,3))
+
+        q = self.mjdata.qpos[self.dof_ids].copy()
+        dq = self.mjdata.qvel[self.dof_ids].copy()
+        
+        camera1_rgb = self.camera_data[self.cameras[0]+"_rgb"]
+        camera1_depth = self.camera_data[self.cameras[0]+"_depth"]
+        camera2_rgb = self.camera_data[self.cameras[1]+"_rgb"]
+        camera2_depth = self.camera_data[self.cameras[1]+"_depth"]
+        camera3_rgb = self.camera_data[self.cameras[2]+"_rgb"]
+        camera3_depth = self.camera_data[self.cameras[2]+"_depth"] 
+
+        self.camera1_rgbs.append(camera1_rgb)
+        self.camera1_depths.append(camera1_depth)
+        self.camera2_rgbs.append(camera2_rgb)
+        self.camera2_depths.append(camera2_depth)
+        self.camera3_rgbs.append(camera3_rgb)
+        self.camera3_depths.append(camera3_depth)
+        self.poses.append(pose)
+        self.times.append(time_diff)
+        self.q.append(q)
+        self.dq.append(dq)
+
+        self.last_recording_time = time.time()
+
+    def save_data(self):
+
+        if not self.record:
+            return
+
+        new_file_name = "Data/" + str(get_latest_number("Data")+1)+".npz"
+        camera1_rgbs = np.array(self.camera1_rgbs)
+        camera1_depths = np.array(self.camera1_depths)
+        camera2_rgbs = np.array(self.camera2_rgbs)
+        camera2_depths = np.array(self.camera2_depths)
+        camera3_rgbs = np.array(self.camera3_rgbs)
+        camera3_depths = np.array(self.camera3_depths)
+        poses = np.array(self.poses)
+        times = np.array(self.times)
+        q = np.array(self.q)
+        dq = np.array(self.dq)
+
+        np.savez(new_file_name, camera1_rgbs=camera1_rgbs, camera1_depths=camera1_depths, camera2_rgbs=camera2_rgbs, camera2_depths=camera2_depths, camera3_rgbs=camera3_rgbs, camera3_depths=camera3_depths, poses=poses, times=times, q=q, dq=q)
+
+    def reset_data(self):
+        self.camera1_rgbs = []
+        self.camera1_depths = []
+        self.camera2_rgbs = []
+        self.camera2_depths = []
+        self.camera3_rgbs = []
+        self.camera3_depths = []
+        self.poses = []
+        self.times = []
+        self.q = []
+        self.dq = []
+        self.record_start_time = time.time()
+
+    def run_poses_from_npz(self, npz_file_path):
+
+        data = np.load(npz_file_path)
+        poses = data['poses']
+        times = data['times']
+
+        self.random_placement()
+        with mujoco.viewer.launch_passive(self.mjmodel, self.mjdata, show_left_ui=False, show_right_ui=False) as viewer:
+          
+            start_time = time.time()
+            data_time = times[0]
+
+            i = 1
+
+            while i<len(poses)-1:
+
+                step_start = time.time()
+                
+                # Set the pose
+                if (time.time()-start_time) - (times[i]-data_time) >= 0:
+                    print(i)
+                    self.target_pos = poses[i][0:3,3]
+                    set_site_pose(self.mjmodel,"eef_target",poses[i][0:3,3])
+                    i += 1
+                
+                tau = self.controller.get_tau(self.mjmodel,self.mjdata,self.target_pos,self.target_rot,False)
+                self.mjdata.ctrl[self.actuator_ids] = tau[self.actuator_ids]
+
+                mujoco.mj_step(self.mjmodel, self.mjdata)
+                viewer.sync()
+                
+
+            while True:
+                tau = self.controller.get_tau(self.mjmodel,self.mjdata,self.target_pos,self.target_rot,False)
+                self.mjdata.ctrl[self.actuator_ids] = tau[self.actuator_ids]
+                mujoco.mj_step(self.mjmodel, self.mjdata)
+                viewer.sync()
+
 if __name__ == "__main__":
-    # Initialize and start the simulation
+
     sim = Simulation()
     sim.start()
 
+    while True:
+        sim.camera_data = sim.get_camera_data()
