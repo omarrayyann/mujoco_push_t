@@ -61,9 +61,6 @@ self.mujocoAR.start()
    
 6. **Enter the IP and Port shown into the app's start screen to start. Make sure to be connected to the same Wi-Fi network as the device. Incase of a latency, I recommend connecting to your phone's hotspot.**
 
-<img src="https://github.com/user-attachments/assets/e84345f9-62eb-4d89-a08b-dcd92d1dd10b" width="500px" />
-
-
 ## Author
 
 Omar Rayyan (olr7742@nyu.edu)
