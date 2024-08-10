@@ -44,7 +44,7 @@ self.mujocoAR.start()
 
    ```bash
    git clone https://github.com/omarrayyann/mujoco_push_t.git
-   cd mujoco_fruit_picking
+   cd mujoco_push_t
    
 3. **Install MujocoAR and othe Requirements**:
    ```bash
