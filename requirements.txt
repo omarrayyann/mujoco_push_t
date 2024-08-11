@@ -1,0 +1,4 @@
+mujoco
+mujoco_ar
+numpy
+scipy

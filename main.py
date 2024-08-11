@@ -43,7 +43,7 @@ class Simulation:
         self.max_pos_error = 0.015
 
         # Recording and Policy Related
-        self.record = True
+        self.record = False
         self.run_policy = False
         self.recording_frequency = 10
         self.last_recording_time = -1
@@ -61,7 +61,7 @@ class Simulation:
         self.mujocoAR.link_site(
             name="eef_target",
             scale=2.0,
-            translation=self.pos_origin,
+            position_origin=self.pos_origin,
             button_fn=lambda: (self.random_placement(), setattr(self, 'placement_time', time.time()), self.reset_data()) if time.time() - self.placement_time > 2.0 else None,
             disable_rot=True,
         )
